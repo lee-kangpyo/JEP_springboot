@@ -4,14 +4,20 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 
 @NoArgsConstructor
 @Getter
+@Setter
 @Entity
 @Table(name = "JEPM_USER")
-public class JepmUser {
+public class JepmUser  implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "USERNO", nullable = false, updatable = false)
@@ -50,6 +56,7 @@ public class JepmUser {
     @Column(name = "REFRESH", length = 200, columnDefinition = "VARCHAR(200) DEFAULT '' COMMENT '리프레쉬토큰'")
     private String refresh;
 
+
     @Builder
     public JepmUser(String email, String userId, String password, String type, String useYn, String iUserId,
                     LocalDateTime iDate, String mUserId, LocalDateTime mDate, String access, String refresh) {
@@ -57,13 +64,48 @@ public class JepmUser {
         this.userId = userId;
         this.password = password;
         this.type = type;
-        this.useYn = useYn;
+        this.useYn = (useYn != null) ? useYn : "Y";
         this.iUserId = iUserId;
         this.iDate = iDate;
         this.mUserId = mUserId;
         this.mDate = mDate;
         this.access = access;
         this.refresh = refresh;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return "Y".equals(useYn);
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public String getUsername() {
+        return userId;
+    }
+
+    @Override
+    public String getPassword(){
+        return password;
     }
 
     @Override
